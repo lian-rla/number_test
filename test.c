@@ -1,12 +1,14 @@
-#define _CRT_SECURE_NO_WARNINGS
+﻿#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <windows.h>
 #pragma execution_character_set("utf-8")
 
 #define N 10000
 #define K 3274
+#define DATA_FILE "Number_10000.txt"
 
 void swap(int* a, int* b) {
     int temp = *a;
@@ -50,8 +52,30 @@ int quickSelect(int arr[], int low, int high, int k) {
     }
 }
 
+// 현재 폴더에서 먼저 찾고, 없으면 실행 파일이 있는 폴더에서 찾는다
+FILE* openDataFile(const char* name) {
+    FILE* fp = fopen(name, "r");
+    if (fp != NULL) {
+        return fp;
+    }
+
+    char path[MAX_PATH];
+    DWORD len = GetModuleFileNameA(NULL, path, MAX_PATH);
+    if (len == 0 || len >= MAX_PATH) {
+        return NULL;
+    }
+
+    char* slash = strrchr(path, '\\');
+    if (slash == NULL || (size_t)(slash - path) + 1 + strlen(name) >= MAX_PATH) {
+        return NULL;
+    }
+
+    strcpy(slash + 1, name);
+    return fopen(path, "r");
+}
+
 int main(void) {
-    system("chcp 65001 > nul");
+    SetConsoleOutputCP(CP_UTF8);
 
     HANDLE hOut = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
@@ -64,11 +88,10 @@ int main(void) {
     }
 
     int arr[N];
-    FILE *fp = fopen("C:\\Users\\minja\\Desktop\\DEVELOP\\test\\Number_10000.txt",
-        "r");
+    FILE *fp = openDataFile(DATA_FILE);
 
     if (fp == NULL) {
-        printf("파일을 열 수 없습니다.\n");
+        printf("%s 파일을 열 수 없습니다.\n", DATA_FILE);
         return 1;
     }
 
